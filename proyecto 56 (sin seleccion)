@@ -1,0 +1,277 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+
+class Producto
+{
+   public string Codigo;
+   public string Descripcion;
+   public decimal precio;
+   public int departamento;
+   public int likes;
+
+    public Producto(string c, string d, decimal p, int de, int l)
+    {
+        Codigo = c;
+        Descripcion = d;
+        precio = p;
+        departamento = de;
+        likes = l;
+    }
+}
+
+class ProductDB
+{
+    static string dirpath = @"C:\Users\Maxcel Center\Desktop\";
+    static string filepathtxt = dirpath + "productos.txt";
+    static string filepathbin = dirpath + "productos.bin";
+    static StreamReader txtin;
+    static StreamWriter txtout;
+    static BinaryReader binin;
+    static BinaryWriter binout;
+
+    //guarda txt por defecto
+    public static void guardarproductos(List<Producto> productos)
+    {
+        txtout = new StreamWriter(new FileStream(filepathtxt, FileMode.Create, FileAccess.Write));
+
+        foreach(Producto p in productos)
+        {
+            txtout.Write(p.Codigo + "|");
+            txtout.Write(p.Descripcion + "|");
+            txtout.Write(p.precio.ToString() + "|");
+            txtout.Write(p.departamento.ToString() + "|");
+            txtout.WriteLine(p.likes.ToString());
+        }
+        txtout.Close();
+    }
+    //guarda txt con otro nombre
+    public static void guardarproductosmod(List<Producto> productos, string archivo)
+    {
+        txtout = new StreamWriter(new FileStream(dirpath+archivo+".txt", FileMode.Create, FileAccess.Write));
+
+        foreach (Producto p in productos)
+        {
+            txtout.Write(p.Codigo + "|");
+            txtout.Write(p.Descripcion + "|");
+            txtout.Write(p.precio.ToString() + "|");
+            txtout.Write(p.departamento.ToString() + "|");
+            txtout.WriteLine(p.likes.ToString());
+        }
+        txtout.Close();
+    }
+    //lee los productos del txt
+    public static List<Producto> Getproductostxt()
+    {
+        List<Producto> productos = new List<Producto>();
+        try
+        {
+            txtin = new StreamReader(new FileStream(filepathtxt, FileMode.Open, FileAccess.Read));
+            while(txtin.Peek() != -1)
+            {
+                string row = txtin.ReadLine();
+                string[] colum = row.Split('|');
+                productos.Add(new Producto(colum[0],colum[1],decimal.Parse(colum[2]),Int32.Parse(colum[3]),Int32.Parse(colum[4])));
+                
+            }
+            txtin.Close();
+            return productos;
+           
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine(filepathtxt + "no encotrado");
+            return null;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Console.WriteLine(dirpath + "no encontrado");
+            return null;
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine(ex.Message);
+            return null;
+        }
+        finally
+        {
+            if (txtin != null)
+            {
+                txtin.Close();
+            }
+        }
+    }
+    //guarda txt por defecto
+    public static void guardarproductosbin(List<Producto> productos)
+    {
+        binout = new BinaryWriter(new FileStream(filepathbin, FileMode.Create, FileAccess.Write));
+
+        foreach (Producto p in productos)
+        {
+            binout.Write(p.Codigo);
+            binout.Write(p.Descripcion);
+            binout.Write(p.precio);
+            binout.Write(p.departamento);
+            binout.Write(p.likes);
+        }
+        binout.Close();
+
+    }
+    //guarda bin con otro nombre
+    public static void guardarproductosbinmod(List<Producto> productos,string archivo)
+    {
+        binout = new BinaryWriter(new FileStream(dirpath+archivo+".bin", FileMode.Create, FileAccess.Write));
+
+        foreach (Producto p in productos)
+        {
+            binout.Write(p.Codigo);
+            binout.Write(p.Descripcion);
+            binout.Write(p.precio);
+            binout.Write(p.departamento);
+            binout.Write(p.likes);
+        }
+        binout.Close();
+
+    }
+    //lee los prodcutos del bin
+    public static List<Producto> Getproductosbin()
+    {
+        List<Producto> productos = new List<Producto>();
+        try
+        {
+            binin = new BinaryReader(new FileStream(filepathbin, FileMode.Open,FileAccess.Read));
+            while(binin.PeekChar() != -1)
+            {
+                string Codigo = binin.ReadString();
+                string Descripcion = binin.ReadString();
+                decimal precio = binin.ReadDecimal();
+                int departamento = binin.ReadInt32();
+                int likes = binin.ReadInt32();
+                Producto p = new Producto(Codigo, Descripcion,precio,departamento, likes);
+                productos.Add(p);
+            }
+            binin.Close();
+            return productos;
+
+        }
+        catch (FileNotFoundException)
+        {
+            Console.WriteLine(filepathbin + "no encotrado");
+            return null;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            Console.WriteLine(dirpath + "no encontrado");
+            return null;
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine(ex.Message);
+            return null;
+        }
+        finally
+        {
+            if (txtin != null)
+            {
+                txtin.Close();
+            }
+        }
+    }
+    //busca por departamento
+    public static List<Producto> getdepartamento(int depto)
+    {
+     List<Producto> p  = Getproductosbin();
+     List<Producto> departamento2 = new List<Producto>();
+       foreach (Producto pro in p)
+       {
+           if(pro.departamento == depto)
+           {
+               departamento2.Add(pro);
+           }         
+       }
+       return departamento2;
+    }
+    //ordena por likes
+    public static List<Producto> ordenarporlikes()
+    {
+        List<Producto> p = Getproductosbin();
+
+        p.Sort(delegate(Producto x, Producto y)
+        {
+            return y.likes.CompareTo(x.likes);
+        });
+        return p;
+
+    }
+    //graba en otro archivo bin y/o txt
+    public static void grabarenotro(List<Producto> productos, string n)
+    {
+        List<Producto> nuevo = productos;
+        guardarproductosmod(nuevo,n);
+        guardarproductosbinmod(nuevo,n);
+    }
+}
+   
+class Program
+    {
+        static void Main(string[] args)
+        {
+            List<Producto> productos = new List<Producto>();
+
+            productos.Add(new Producto("123a","agua",Convert.ToDecimal(12.5),1,45));
+            productos.Add(new Producto("123b","GTA V",Convert.ToDecimal(500),2,10000));
+            productos.Add(new Producto("123c","galletas",Convert.ToDecimal(23.89),3,10));
+
+            ProductDB.guardarproductos(productos);
+            ProductDB.guardarproductosbin(productos);
+            Console.WriteLine("se grabo");
+
+            Console.ReadLine();
+
+            List<Producto> productosver = new List<Producto>();
+            productosver = ProductDB.Getproductostxt();
+            foreach (Producto p in productosver)
+            {
+                Console.WriteLine("{0} {1} {2} {3} {4}", p.Codigo, p.Descripcion, p.precio, p.departamento, p.likes);
+            }
+
+            Console.WriteLine();
+
+            List<Producto> productosbin = new List<Producto>();
+            productosbin = ProductDB.Getproductosbin();
+            foreach (Producto p in productosver)
+            {
+                Console.WriteLine("{0} {1} {2} {3} {4}", p.Codigo, p.Descripcion, p.precio, p.departamento, p.likes);
+            }
+
+            List<Producto> dept = new List<Producto>();
+            dept = ProductDB.getdepartamento(2);
+            foreach (Producto p in dept)
+            {
+                Console.WriteLine("{0} {1} {2} {3} {4}", p.Codigo, p.Descripcion, p.precio, p.departamento, p.likes);
+            }
+            Console.ReadLine();
+
+            List<Producto> lik = new List<Producto>();
+            lik = ProductDB.ordenarporlikes();
+            foreach (Producto p in lik)
+            {
+                Console.WriteLine("{0} {1} {2} {3} {4}", p.Codigo, p.Descripcion, p.precio, p.departamento, p.likes);
+            }
+            Console.ReadLine();
+
+            string n = "otromas";
+            ProductDB.guardarproductosmod(lik,n);
+            ProductDB.guardarproductosbinmod(lik,n);
+            Console.WriteLine("se grabo el otro");
+
+            Console.ReadLine();
+
+        }
+    }
+
+
