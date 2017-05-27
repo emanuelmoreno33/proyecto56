@@ -247,7 +247,9 @@ class Program
             {
                 Console.WriteLine("{0} {1} {2} {3} {4}", p.Codigo, p.Descripcion, p.precio, p.departamento, p.likes);
             }
-
+            
+            Console.WriteLine();
+            
             List<Producto> dept = new List<Producto>();
             dept = ProductDB.getdepartamento(2);
             foreach (Producto p in dept)
@@ -255,7 +257,7 @@ class Program
                 Console.WriteLine("{0} {1} {2} {3} {4}", p.Codigo, p.Descripcion, p.precio, p.departamento, p.likes);
             }
             Console.ReadLine();
-
+            
             List<Producto> lik = new List<Producto>();
             lik = ProductDB.ordenarporlikes();
             foreach (Producto p in lik)
